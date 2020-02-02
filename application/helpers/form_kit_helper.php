@@ -1,24 +1,51 @@
 <?php
 
+
+function control_error($name) {
+    echo form_error($name, '<div class="col-12 alert alert-danger" role="alert">', '</div>');
+}
+/**
+ * Internal usage; Add label and validation error message before it.
+ */
 function control_label(&$attr) {
-    echo form_error(issetor($attr['name'], ''), '<div class="col-12 alert alert-danger" role="alert">', '</div>');
+    control_error(issetor($attr['name'], ''));
     ?><label class="col-md-3 col-form-label" for="<?=issetor($attr['name'], '')?>"><?=issetor($attr['label'], '')?></label><?php
 }
 
+/**
+ * Internal usage; Expand HTML attributes with additional checks
+ */
 function control_attrs(&$attr) {
-    if (isset($attr['name'])) $attr['id'] = $attr['name'];
-    isset($attr['class']) ?: $attr['class'] = 'form-control';
-    if (isset($attr['disabled']) && $attr['disabled'] === false) unset($attr['disabled']);
-    if (isset($attr['readonly']) && $attr['readonly'] === false) unset($attr['readonly']);
+    isset($attr['name']) AND !isset($attr['id']) AND $attr['id'] = $attr['name'];
+    empty($attr['class']) AND $attr['class'] = 'form-control';
     unset($attr['label']);
-    if (isset($attr['value']) && isset($attr['name']) && set_value($attr['name']))
+    if (isset($attr['value'], $attr['name']) && set_value($attr['name']))
         $attr['value'] = set_value($attr['name']);
     return implode(' ', array_map(
-        function ($k, $v) { return $k .'="'. htmlspecialchars($v) .'"'; },
+        function ($k, $v) { return $v === FALSE ? '' : $k .'="'. htmlspecialchars($v) .'"'; },
         array_keys($attr), $attr
     ));
 }
 
+/**
+ * Readonly, unsubmittable form input
+ */
+function control_div($attr, $raw = FALSE) {
+    $value = $attr['value'];
+    unset($attr['value'])
+    ?>
+    <div class="form-group row">
+        <?php control_label($attr) ?>
+        <div class="col-md-9">
+            <div <?= control_attrs($attr) ?>><?= $raw ? (is_callable($value) ? $value() : $value) : htmlspecialchars($value) ?></div>
+        </div>
+    </div>
+    <?php
+}
+
+/**
+ * General form <input>
+ */
 function control_input($attr) {
     ?>
     <div class="form-group row">
@@ -30,24 +57,33 @@ function control_input($attr) {
     <?php
 }
 
+/**
+ * Form submit button
+ */
 function control_submit() {
-    control_input(['type'=>'submit', 'class'=>'form-control btn btn-primary', 'value'=>"Submit"]);
+    control_input(['name'=>'form_submit','type'=>'submit', 'class'=>'form-control btn btn-primary', 'value'=>"Submit"]);
 }
 
+/**
+ * General form <textarea>
+ */
 function control_textarea($attr) {
     $value = set_value($attr['name'], isset($attr['value']) ? $attr['value'] : '', FALSE);
-    unset($attr['value'])
+    unset($attr['value']);
     ?>
     <div class="form-group row">
         <?php control_label($attr) ?>
         <div class="col-md-9">
-            <textrea <?= control_attrs($attr) ?>><?=htmlspecialchars($value)?></textarea>
+            <textarea <?= control_attrs($attr) ?>><?=htmlspecialchars($value)?></textarea>
         </div>
     </div>
 
     <?php
 }
 
+/**
+ * General form <select> (with 'options' as assoc PHP child)
+ */
 function control_option($attr) {
     $value = $attr['value'];
     $options = $attr['options'];
@@ -72,6 +108,9 @@ function control_option($attr) {
     <?php
 }
 
+/**
+ * Input file with download button if file actually exist
+ */
 function control_file($attr, $image = FALSE) {
     $file = "./uploads/$attr[folder]/$attr[value]";
     $name = issetor($attr['name'], '');
@@ -88,13 +127,21 @@ function control_file($attr, $image = FALSE) {
             <?php if ($image) : ?>
             <img src="<?=base_url($file)?>" alt="" class="mb-2 d-block" style="max-height:200px;max-width:100%">
             <?php endif ?>
-            <a href="<?=base_url($file)?>" class="btn btn-info mr-auto" download>
-            <i class="fa fa-download"></i> Download</a>
+            <?php control_buttons([[
+                'label'=>'Download',
+                'icon'=>'fa fa-download',
+                'style'=>'btn btn-outline-success',
+                'value'=>base_url($file),
+                'kind'=>'download'
+                ]]) ?>
             <?php if (!$readonly) : ?>
-            <div class="btn-group-toggle d-inline-block" data-toggle="buttons">
-            <label onclick="$(this).button('toggle'); if(confirm('Are you sure?')) $(this).parents('form')[0].submit()"
-            class="btn btn-outline-danger mb-0 mr-auto"><i class="fa fa-trash"></i>
-            <input type="checkbox" name="<?=$name?>_delete" value="y"> Delete</label></div>
+                <?php control_buttons([[
+                    'name'=>$name.'_delete',
+                    'label'=>'Delete',
+                    'icon'=>'fa fa-trash',
+                    'style'=>'btn btn-outline-danger',
+                    'confirm'=>'Are you sure?'
+                    ]]) ?>
             <?php endif ?>
             <span><?=$attr['value']?></span>
             </div>
@@ -104,6 +151,52 @@ function control_file($attr, $image = FALSE) {
     <?php
 }
 
+function control_buttons($buttons) {
+    ?>
+    	<div class="btn-group-toggle d-inline-flex" data-toggle="buttons">
+            <?php foreach ($buttons as $button):
+                $name = isset($button['name']) ? $button['name'] : '';
+                $label = isset($button['label']) ? $button['label'] : '';
+                $value = isset($button['value']) ? $button['value'] : 'y';
+                $icon = isset($button['icon']) ? $button['icon'] : "fa fa-info";
+                $style = isset($button['style']) ? $button['style'] : "btn btn-outline-primary";
+                $conf = isset($button['confirm']) ? "confirm('$button[confirm]')" : 'true';
+                $type = isset($button['type']) ? $button['type'] : 'submit';
+                switch ($type) {
+                    case 'submit':
+                        ?>
+                            <label onclick="$(this).button('toggle'); if(<?=$conf?>) $(this).parents('form')[0].submit()"
+                            class="mb-0 mr-2 <?=$style?>"><i class="<?=$icon?>"></i>
+                            <input type="checkbox" name="<?=$name?>" value="<?=$value?>">&nbsp;<?=$label?></label>
+                        <?php
+                        break;
+                    case 'download':
+                        ?>
+                            <a onclick="return <?=$conf?>" href="<?=$value?>" class="mr-2 <?=$style?>" download>
+                            <i class="<?=$icon?>"></i>&nbsp;<?=$label?></a>
+                        <?php
+                        break;
+                    case 'link':
+                        ?>
+                            <a onclick="return <?=$conf?>" href="<?=$value?>" class="mr-2 <?=$style?>">
+                            <i class="<?=$icon?>"></i>&nbsp;<?=$label?></a>
+                        <?php
+                        break;
+                    case 'copy':
+                        ?>
+                            <button onclick="if(<?=$conf?>) prompt('Copy this text (Ctrl+C):', '<?=htmlspecialchars($value)?>'); return false" class="mr-2 <?=$style?>">
+                            <i class="<?=$icon?>"></i>&nbsp;<?=$label?></button>
+                        <?php
+                        break;
+                }
+            endforeach ?>
+        </div>
+    <?php
+}
+
+/**
+ * Input file, but for image
+ */
 function control_image($attr) {
     control_file($attr, TRUE);
 }

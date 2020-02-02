@@ -1,78 +1,62 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Admin extends CI_Controller {
+require 'Basic.php';
 
-	public function __construct() {
-		parent::__construct();
-		if ($this->session->role !== 'admin') {
-			redirect('login');
-		} else {
-			$this->current_id = $this->session->id_admin;
-		}
-	}
+class Admin extends CI_Basic_Role_Controller {
 
-	public function index()
+	const ROLE = 'admin';
+
+	public function user($action='manage', $id=0)
 	{
-		$this->dashboard();
-	}
-
-	public function dashboard()
-	{
-		load_view('admin/dashboard', [
-			'profile' => $this->db->get_where('admin', ['id_admin' => $this->current_id])->row(),
-		]);
-	}
-
-	public function user($action='list', $id=0)
-	{
-		if ($action == 'list') {
-			load_view('admin/list/user');
+		if ($action == 'manage') {
+			$this->view('user/manage');
 		} else if ($action == 'get') {
-			echo json_encode(ajax_table_driver('user', [], ['name_user', 'email_user']));
+			load_json(ajax_table_driver('login', ['role'=>'user'], ['username', 'name', 'email']));
 		} else if ($action == 'create') {
-			load_view('admin/edit/user', [
+			$this->view('user/edit', [
 				'data' => (object)[
-					'id_user' => 0,
-					'name_user' => '',
-					'email_user' => '',
+					'login_id' => 0,
 					'username' => '',
+					'email' => '',
 					'password' => '',
+					'name' => '',
+					'avatar' => '',
+					'otp' => '',
 				]
 			]);
 		} else if ($action == 'edit') {
-			load_view('admin/edit/user', [
-				'data' => $this->db->from('user,login')
-					->where("user.id_login=login.id_login")
-					->where(["user.id_user" => $id])
-					->get()->row(),
+			$this->view('user/edit', [
+				'data' => $this->db->get_where('login', ['login_id' => $id])->row(),
 			]);
 		} else if ($action == 'delete') {
-			$id_login = get_id_login('user', $id);
-			$this->db->delete('user', ['id_user' => $id]);
-			$this->db->delete('login', ['id_login' => $id_login]);
-			redirect('admin/user/');
+			if ($this->db->delete('login', ['login_id' => $id])) {
+				set_message('Deleted successfully');
+				redirect('admin/user/');
+			} else {
+				show_401();
+			}
 		} else if ($action == 'update') {
 			if (run_validation([
-				['name_user', 'Name', 'required'],
-				['email_user', 'Email', 'required|valid_email'],
-				['username', 'Username', 'required|min_length[3]'],
-				['password', 'Password', $id == 0 ? 'required' : '']
+				['name', 'Name', 'required|alpha_numeric_spaces'],
+				['email', 'Email', 'required|valid_email'],
+				['username', 'Username', 'required|min_length[3]|alpha_numeric'],
 			])) {
-				$data = get_post_updates(['name_user', 'email_user']);
-				$login = get_post_updates(['username', 'password'], ['role' => 'user']);
-				if (isset($login['password']))
-					$login['password'] = password_hash($login['password'], PASSWORD_BCRYPT);
-				if ($id == 0) {
-					$this->db->insert('login', $login);
-					$id_login = $this->db->insert_id();
-					$data['id_login'] = $id_login;
-					$this->db->insert('user', $data);
+				$data = get_post_updates(['name', 'email', 'username']);
+				if(!insert_or_update('login', $data, $id)) {
+					$this->user($id == 0 ? 'create' : 'edit', $id);
 				} else {
-					$this->db->update('user', $data, ['id_user' => $id]);
-					$this->db->update('login', $login, ['id_login' => get_id_login('user', $id)]);
+					$otps = get_post_updates(['otp_invoke', 'otp_revoke']);
+					if (empty($otps)) {
+						set_message('Saved successfully');
+						redirect('admin/user/');
+					} else {
+						$this->load->model('login_model', 'auth');
+						if (isset($otps['otp_invoke'])) $this->auth->generate_otp($id);
+						if (isset($otps['otp_revoke'])) $this->auth->clear_otp($id);
+						redirect('admin/user/edit/'.$id);
+					}
 				}
-				redirect('admin/user/');
 			} else {
 				$this->user($id == 0 ? 'create' : 'edit', $id);
 			}

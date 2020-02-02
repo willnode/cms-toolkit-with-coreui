@@ -16,10 +16,11 @@
   >
   <thead>
     <tr>
-      <th data-field="name_user">Name</th>
-      <th data-field="email_user">Email</th>
+      <th data-field="username">Username</th>
+      <th data-field="name">Name</th>
+      <th data-field="email">Email</th>
       <th
-        data-field="id_user"
+        data-field="login_id"
         data-formatter="actionFormat"
         data-width="100"
         data-align="center"

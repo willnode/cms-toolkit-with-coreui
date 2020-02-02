@@ -16,59 +16,28 @@
 CREATE DATABASE IF NOT EXISTS `cmstoolkit` /*!40100 DEFAULT CHARACTER SET latin1 */;
 USE `cmstoolkit`;
 
--- Dumping structure for table cmstoolkit.admin
-CREATE TABLE IF NOT EXISTS `admin` (
-  `id_admin` int(11) NOT NULL AUTO_INCREMENT,
-  `id_login` int(11) NOT NULL,
-  `name_admin` varchar(255) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id_admin`),
-  KEY `FK_admin_login` (`id_login`),
-  CONSTRAINT `FK_admin_login` FOREIGN KEY (`id_login`) REFERENCES `login` (`id_login`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
-
--- Dumping data for table cmstoolkit.admin: ~0 rows (approximately)
-DELETE FROM `admin`;
-/*!40000 ALTER TABLE `admin` DISABLE KEYS */;
-INSERT INTO `admin` (`id_admin`, `id_login`, `name_admin`) VALUES
-	(1, 1, 'Admin');
-/*!40000 ALTER TABLE `admin` ENABLE KEYS */;
-
 -- Dumping structure for table cmstoolkit.login
 CREATE TABLE IF NOT EXISTS `login` (
-  `id_login` int(11) NOT NULL AUTO_INCREMENT,
+  `login_id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
-  `password` char(60) NOT NULL DEFAULT '',
+  `email` varchar(255) NOT NULL,
+  `password` char(60) DEFAULT NULL,
+  `otp` char(6) DEFAULT NULL,
+  `name` varchar(255) NOT NULL DEFAULT '',
+  `avatar` varchar(255) NOT NULL DEFAULT '',
   `role` enum('admin','user') NOT NULL DEFAULT 'user',
-  PRIMARY KEY (`id_login`),
-  UNIQUE KEY `username` (`username`)
+  PRIMARY KEY (`login_id`),
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 
 -- Dumping data for table cmstoolkit.login: ~2 rows (approximately)
 DELETE FROM `login`;
 /*!40000 ALTER TABLE `login` DISABLE KEYS */;
-INSERT INTO `login` (`id_login`, `username`, `password`, `role`) VALUES
-	(1, 'admin', '$2y$10$wVerUNh0IGO0QOkKyrSMTeicyfhTC/TRtEfTwFKPlPoCHIw9VHkf.', 'admin'),
-	(2, 'user', '$2y$10$gq7my7kh9wj/6ewnEKAkDeqTMhR5EvJO9jpTJZ75zjZ945sIEUcpC', 'user');
+INSERT INTO `login` (`login_id`, `username`, `email`, `password`, `otp`, `name`, `avatar`, `role`) VALUES
+	(1, 'admin', 'admin@example.com', '$2y$10$wVerUNh0IGO0QOkKyrSMTeicyfhTC/TRtEfTwFKPlPoCHIw9VHkf.', NULL, 'My Admin', '', 'admin'),
+	(2, 'user', 'user@example.com', '$2y$10$gq7my7kh9wj/6ewnEKAkDeqTMhR5EvJO9jpTJZ75zjZ945sIEUcpC', NULL, 'My User', '', 'user');
 /*!40000 ALTER TABLE `login` ENABLE KEYS */;
-
--- Dumping structure for table cmstoolkit.user
-CREATE TABLE IF NOT EXISTS `user` (
-  `id_user` int(11) NOT NULL AUTO_INCREMENT,
-  `id_login` int(11) NOT NULL,
-  `name_user` varchar(255) NOT NULL DEFAULT '',
-  `email_user` varchar(255) NOT NULL DEFAULT '',
-  `avatar_user` varchar(255) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id_user`),
-  KEY `FK_user_login` (`id_login`),
-  CONSTRAINT `FK_user_login` FOREIGN KEY (`id_login`) REFERENCES `login` (`id_login`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
-
--- Dumping data for table cmstoolkit.user: ~1 rows (approximately)
-DELETE FROM `user`;
-/*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` (`id_user`, `id_login`, `name_user`, `email_user`, `avatar_user`) VALUES
-	(1, 2, 'User', 'user@example.com', '');
-/*!40000 ALTER TABLE `user` ENABLE KEYS */;
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;

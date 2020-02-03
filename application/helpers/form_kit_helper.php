@@ -109,7 +109,8 @@ function control_option($attr) {
 }
 
 /**
- * Input file with download button if file actually exist
+ * Input file with download button if file actually exist.
+ * (proper handling for backend should be done with control_file_upload)
  */
 function control_file($attr, $image = FALSE) {
     $file = "./uploads/$attr[folder]/$attr[value]";
@@ -151,6 +152,9 @@ function control_file($attr, $image = FALSE) {
     <?php
 }
 
+/**
+ * Input behaviors via button (like alternative submit for specific action or nice-to-have UX behaviours)
+ */
 function control_buttons($buttons) {
     ?>
     	<div class="btn-group-toggle d-inline-flex" data-toggle="buttons">

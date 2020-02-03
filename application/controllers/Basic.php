@@ -7,7 +7,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class CI_Basic_Role_Controller extends CI_Controller {
 
 	/**
-	 * To be overridden
+	 * To be overridden, role name applied
 	 */
 	const ROLE = '';
 
@@ -30,6 +30,7 @@ class CI_Basic_Role_Controller extends CI_Controller {
 		if ($this->session->password) {
 			$this->dashboard();
 		} else {
+			// If logged in via PIN, it's mean it's password are obsolete, so need to reinput their new password
 			set_message('Welcome. You\'ve logged in using PIN/Token link, so you\'re required to set your new password here.');
 			redirect(static::ROLE."/profile/edit");
 		}
@@ -82,12 +83,10 @@ class CI_Basic_Role_Controller extends CI_Controller {
 						$this->db->update('login', $data, ['login_id' => $this->current_id]);
 						set_message('Saved successfully');
 						redirect('login/');
-					} else {
-						$this->profile();
 					}
-			} else {
-				$this->profile();
 			}
+			// Failed updates goes here.
+			$this->profile();
 		} else {
 			show_404();
 		}

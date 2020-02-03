@@ -10,7 +10,10 @@ What already included within this template:
 + User management Console CRUD in Admin
 + User profile customization
 + Modular Form Templates
-+ AJAX-driven Table Pagination
++ Helpful validation feedback messages
++ AJAX-driven table with server pagination
++ Many helper function for backend common task
++ OTP/Sign-in token link for forgot password
 + Other small improvements
 
 This opinionated template aims to be modular as possible so it can be expanded for complex usage like multi account-type management, form validation, file uploads, etc. can be as simple as adding couple lines of code.

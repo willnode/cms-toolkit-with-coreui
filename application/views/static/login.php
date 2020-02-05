@@ -4,7 +4,7 @@
 		<div class="card-group">
 		<div class="card p-4">
 			<div class="card-body">
-			<form action="" method="post">
+			<?= form_open() ?>
 			<h1>Login</h1>
 			<p class="text-muted">Sign In to your account</p>
 

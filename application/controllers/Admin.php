@@ -15,15 +15,7 @@ class Admin extends CI_Basic_Role_Controller {
 			load_json(ajax_table_driver('login', ['role'=>'user'], ['username', 'name', 'email']));
 		} else if ($action == 'create') {
 			$this->view('user/edit', [
-				'data' => (object)[
-					'login_id' => 0,
-					'username' => '',
-					'email' => '',
-					'password' => '',
-					'name' => '',
-					'avatar' => '',
-					'otp' => '',
-				]
+				'data' => get_default_values('login')
 			]);
 		} else if ($action == 'edit') {
 			$this->view('user/edit', [

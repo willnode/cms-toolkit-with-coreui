@@ -99,7 +99,7 @@ function control_option($attr) {
         <div class="col-md-9">
             <select <?= control_attrs($attr) ?>>
                 <?php foreach ($options as $v) : ?>
-                <option value="<?= $v->{$option_key} ?>" <?=set_select($attr['name'], $value==$v->{$option_key})?>>
+                <option value="<?= $v->{$option_key} ?>" <?=set_select($attr['name'], $value, $value==$v->{$option_key})?>>
                     <?= $v->{$option_value}?></option>
                 <?php endforeach ?>
             </select>

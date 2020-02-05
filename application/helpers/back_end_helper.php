@@ -122,6 +122,15 @@ function check_db_error() {
 	return set_error(get_instance()->db->error()['message']);
 }
 
+function get_default_values($table) {
+	$fields = $this->db->list_fields('login');
+	$values = [];
+	foreach ($fields as $f) {
+		$values[$f] = $f === $table.'_id' ? 0 : '';
+	}
+	return $values;
+}
+
 /**
  * Update or insert depending on ID, and update that's id to LAST_INSERT_ID
  * or Show the error if it fails

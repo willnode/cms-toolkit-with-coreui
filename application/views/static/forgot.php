@@ -4,7 +4,7 @@
 		<div class="card-group">
 		<div class="card p-4">
 			<div class="card-body">
-			<form action="send" method="post">
+			<?= form_open('forgot/send') ?>
 			<h1>Forgot Password</h1>
 			<p class="text-muted">Enter your email or username to reset password</p>
 
@@ -28,7 +28,7 @@
 				<a href="<?=base_url('login/')?>" class="btn btn-link px-4">Back to Login.</a>
 				</div>
 			</div>
-			</form>
+			<?= form_close() ?>
 			</div>
 		</div>
 		</div>

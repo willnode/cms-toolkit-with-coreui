@@ -4,7 +4,7 @@
 		<div class="card-group">
 		<div class="card p-4">
 			<div class="card-body">
-			<form action="otp" method="post">
+			<?= form_open('forgot/otp') ?>
 			<h1>Verify "<?=$this->session->otp?>"</h1>
 			<p class="text-muted">We have send a verification pin for you to reset password.</p>
 
@@ -28,7 +28,7 @@
 				<a href="<?=base_url('forgot/')?>" class="btn btn-link px-4">Wrong account?</a>
 				</div>
 			</div>
-			</form>
+			<?= form_close() ?>
 			</div>
 		</div>
 		</div>

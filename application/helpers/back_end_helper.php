@@ -123,7 +123,7 @@ function check_db_error() {
 }
 
 function get_default_values($table) {
-	$fields = $this->db->list_fields('login');
+	$fields = get_instance()->db->list_fields($table);
 	$values = [];
 	foreach ($fields as $f) {
 		$values[$f] = $f === $table.'_id' ? 0 : '';

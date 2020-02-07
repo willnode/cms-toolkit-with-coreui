@@ -24,7 +24,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 */
 
-$config['base_url'] = 'http://localhost/cms-toolkit-with-coreui';
+$config['base_url'] = '/cms-toolkit-with-coreui';
 
 /*
 |--------------------------------------------------------------------------

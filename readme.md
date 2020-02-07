@@ -14,6 +14,7 @@ What already included within this template:
 + AJAX-driven table with server pagination
 + Many helper function for backend common task
 + OTP/Sign-in token link for forgot password
++ Service Worker
 + Other small improvements
 
 This opinionated template aims to be modular as possible so it can be expanded for complex usage like multi account-type management, form validation, file uploads, etc. can be as simple as adding couple lines of code.

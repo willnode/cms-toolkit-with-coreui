@@ -24,7 +24,7 @@
     <img class="navbar-brand-full" src="<?=base_url('assets/logo.png')?>" height="30" alt="Logo">
     <img class="navbar-brand-minimized" src="<?=base_url('assets/logo.png')?>" height="30" alt="Logo">
   </a>
-  <ul class="nav navbar-nav d-md-down-none ml-auto">
+  <ul class="nav navbar-nav ml-auto">
     <li class="nav-item px-3">
       <a class="nav-link" href="<?=base_url('login')?>">Login</a>
     </li>

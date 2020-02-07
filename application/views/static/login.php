@@ -31,11 +31,9 @@
 				</div>
 				<input class="form-control" type="password" name="password" placeholder="Password">
 			</div>
-			<div class="row">
-				<div class="col-6">
+			<div class="d-flex flex-md-row flex-column">
 				<input type="submit" value="Login" class="btn btn-primary px-4">
-				<a href="<?=base_url('forgot/')?>" class="btn btn-link px-4">Forgot password?</a>
-				</div>
+				<a href="<?=base_url('forgot/')?>" class="btn btn-link ml-md-auto">Forgot password?</a>
 			</div>
 			</form>
 			</div>

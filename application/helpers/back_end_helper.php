@@ -47,7 +47,7 @@ function control_file_delete($folder, $existing_value = '')
 /**
  * Handle file upload on POST, and also delete existing file in previous data (so no orphan files)
  */
-function control_file_upload(&$updates, $name, $folder, $existing_value = '', $types = '*')
+function control_file_upload(&$updates, $name, $folder, $existing_row = NULL, $types = '*', $required = FALSE)
 {
 	$ci = &get_instance();
     if (is_uploaded_file($_FILES[$name]['tmp_name'])) {
@@ -60,18 +60,20 @@ function control_file_upload(&$updates, $name, $folder, $existing_value = '', $t
         ]);
         if ($ci->upload->do_upload($name)) {
 			$updates[$name] = $ci->upload->file_name;
-			control_file_delete($folder, $existing_value);
+			if (!empty($existing_row->{$name}))
+				control_file_delete($folder, $existing_row->{$name});
 			return TRUE;
 		} else {
 			set_error($ci->upload->display_errors('', '<br>'));
 			return FALSE;
 		}
-    } elseif ($ci->input->post($name.'_delete')) {
+    } elseif ($ci->input->post($name.'_delete') && !$required) {
 		$updates[$name] = '';
-		control_file_delete($folder, $existing_value);
+		if (!empty($existing_row->{$name}))
+			control_file_delete($folder, $existing_value);
 		return TRUE;
 	}
-	return TRUE;
+	return !$required || !empty($existing_row->{$name});
 }
 
 /**
@@ -128,7 +130,14 @@ function get_default_values($table) {
 	foreach ($fields as $f) {
 		$values[$f] = $f === $table.'_id' ? 0 : '';
 	}
-	return $values;
+	return (object)$values;
+}
+
+function get_values_at($table, $id, $not_found_handler = '') {
+	$data = get_instance()->db->get_where($table, [$table.'_id' => $id])->row();
+	if (empty($data) && is_callable($not_found_handler))
+		$not_found_handler();
+	return $data;
 }
 
 /**
@@ -258,3 +267,9 @@ function redirect_to_login() {
 	redirect('login?redirect='.urlencode(current_url()));
 }
 
+function redirect_back() {
+	if (!empty($_SERVER['HTTP_REFERER']))
+		redirect($_SERVER['HTTP_REFERER']);
+	else
+		redirect('/');
+}

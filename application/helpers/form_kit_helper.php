@@ -27,17 +27,24 @@ function control_attrs(&$attr) {
     ));
 }
 
+function control_attrs_data(&$attr) {
+    return implode(' ', array_map(
+        function ($k, $v) { return $v === FALSE ? '' : 'data-'.$k .'="'. htmlspecialchars($v) .'"'; },
+        array_keys($attr), $attr
+    ));
+}
+
 /**
  * Readonly, unsubmittable form input
  */
-function control_div($attr, $raw = FALSE) {
+function control_div($attr) {
     $value = $attr['value'];
     unset($attr['value'])
     ?>
     <div class="form-group row">
         <?php control_label($attr) ?>
         <div class="col-md-9">
-            <div <?= control_attrs($attr) ?>><?= $raw ? (is_callable($value) ? $value() : $value) : htmlspecialchars($value) ?></div>
+            <div <?= control_attrs($attr) ?>><?= is_callable($value) ? $value() : htmlspecialchars($value) ?></div>
         </div>
     </div>
     <?php
@@ -153,43 +160,55 @@ function control_file($attr, $image = FALSE) {
 }
 
 /**
- * Input behaviors via button (like alternative submit for specific action or nice-to-have UX behaviours)
+ * Input file, but for image
  */
-function control_buttons($buttons) {
+function control_image($attr) {
+    control_file($attr, TRUE);
+}
+
+/**
+ * Input behaviors via button (like alternative submit for specific action or other UX behaviours)
+ */
+function control_buttons($buttons, $style = 'btn-group') {
     ?>
-    	<div class="btn-group-toggle d-inline-flex" data-toggle="buttons">
+    	<div class="<?=$style?> d-inline-flex no-wrap">
             <?php foreach ($buttons as $button):
                 $name = isset($button['name']) ? $button['name'] : '';
-                $label = isset($button['label']) ? $button['label'] : '';
-                $value = isset($button['value']) ? $button['value'] : 'y';
+                $label = isset($button['label']) ? '&nbsp;&nbsp;'.$button['label'] : '';
                 $icon = isset($button['icon']) ? $button['icon'] : "fa fa-info";
                 $style = isset($button['style']) ? $button['style'] : "btn btn-outline-primary";
                 $conf = isset($button['confirm']) ? "confirm('$button[confirm]')" : 'true';
-                $type = isset($button['type']) ? $button['type'] : 'submit';
+                if (isset($button['href'])) {
+                    $value = $button['href'];
+                    $type = isset($button['type']) ? $button['type'] : 'link';
+                } else {
+                    $value = isset($button['value']) ? $button['value'] : 'y';
+                    $type = isset($button['type']) ? $button['type'] : 'submit';
+                }
                 switch ($type) {
                     case 'submit':
                         ?>
-                            <label onclick="$(this).button('toggle'); if(<?=$conf?>) $(this).parents('form')[0].submit()"
-                            class="mb-0 mr-2 <?=$style?>"><i class="<?=$icon?>"></i>
-                            <input type="checkbox" name="<?=$name?>" value="<?=$value?>">&nbsp;<?=$label?></label>
+                            <div onclick="if(<?=$conf?>) {var f = $(this).parents('form')[0]; f['<?=$name?>'].checked=true;f.submit();}"
+                            class="<?=$style?>" style="cursor: pointer"><i class="<?=$icon?>"></i>
+                            <input type="checkbox" hidden name="<?=$name?>" value="<?=$value?>"><?=$label?></div>
                         <?php
                         break;
                     case 'download':
                         ?>
-                            <a onclick="return <?=$conf?>" href="<?=$value?>" class="mr-2 <?=$style?>" download>
-                            <i class="<?=$icon?>"></i>&nbsp;<?=$label?></a>
+                            <a onclick="return <?=$conf?>" href="<?=$value?>" class="<?=$style?>" download>
+                            <i class="<?=$icon?>"></i><?=$label?></a>
                         <?php
                         break;
                     case 'link':
                         ?>
-                            <a onclick="return <?=$conf?>" href="<?=$value?>" class="mr-2 <?=$style?>">
-                            <i class="<?=$icon?>"></i>&nbsp;<?=$label?></a>
+                            <a onclick="return <?=$conf?>" href="<?=$value?>" class="<?=$style?>">
+                            <i class="<?=$icon?>"></i><?=$label?></a>
                         <?php
                         break;
                     case 'copy':
                         ?>
-                            <button onclick="if(<?=$conf?>) prompt('Copy this text (Ctrl+C):', '<?=htmlspecialchars($value)?>'); return false" class="mr-2 <?=$style?>">
-                            <i class="<?=$icon?>"></i>&nbsp;<?=$label?></button>
+                            <button onclick="if(<?=$conf?>) prompt('Copy this text (Ctrl+C):', $(this).data('value')); return false" data-value="<?=htmlspecialchars($value)?>" class="<?=$style?>">
+                            <i class="<?=$icon?>"></i><?=$label?></button>
                         <?php
                         break;
                 }
@@ -199,8 +218,49 @@ function control_buttons($buttons) {
 }
 
 /**
- * Input file, but for image
+ * Table template for 1:1 Bootstrap AJAX driven template
  */
-function control_image($attr) {
-    control_file($attr, TRUE);
+function control_table($data, $columns) {
+    $id = isset($data['id']) ? $data['id'] : 'table';
+    $class = isset($data['class']) ? $data['class'] : 'table-sm';
+    $script = '';
+    unset($data['id']);
+    unset($data['class']);
+    empty($data['url']) AND $data['url'] = 'get?'.$_SERVER['QUERY_STRING'];
+    empty($data['search']) AND $data['search'] = 'true';
+    empty($data['toggle']) AND $data['toggle'] = 'table';
+    empty($data['pagination']) AND $data['pagination'] = 'true';
+    empty($data['side-pagination']) AND $data['side-pagination'] = 'server';
+
+    if (isset($data['toolbar'])) {
+        ?><div id="toolbar"><?=$data['toolbar']?></div><?php
+        $data['toolbar']='#toolbar';
+        empty($data['toolbar-align']) AND $data['toolbar-align'] = 'right';
+    }
+    ?>
+    <table id=<?=$id?> class="<?=$class?>" <?=control_attrs_data($data)?>><thead><tr>
+    <?php foreach ($columns as $column) {
+        $label = $column['label'];
+        unset($column['label']);
+        if (isset($column['formatter'])) {
+            $jsname = $column['field'].'Format';
+            $script .= 'function '.$jsname.'(value, data, index){return `'.$column['formatter']."`}\n";
+            $column['formatter'] = $jsname;
+            empty($column['width']) AND $column['width'] = '1'; // fit with content
+        }
+        ?><th <?=control_attrs_data($column)?>><?=$label?></th><?php
+    } ?>
+    </tr></thead></table>
+    <script><?=$script?></script><?php
+}
+
+/**
+ * Like control_buttons() but returns the output instead of echo (useful for control_table)
+ */
+function get_control_buttons($buttons, $style = 'btn-group') {
+    ob_start();
+    control_buttons($buttons, $style);
+    $str = ob_get_contents();
+    ob_end_clean();
+    return $str;
 }

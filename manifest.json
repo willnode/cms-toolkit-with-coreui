@@ -1,0 +1,17 @@
+{
+	"short_name": "CMS-Toolkit",
+	"name": "CMS Toolkit with CoreUI",
+	"description": "CMS Toolkit with CoreUI",
+	"icons": [
+	  {
+		"src": "assets/logo.png",
+		"type": "image/png",
+		"sizes": "256x256"
+	  }
+	],
+	"start_url": "login",
+	"background_color": "#FFFFFF",
+	"display": "standalone",
+	"scope": "/",
+	"theme_color": "#EE4323"
+  }

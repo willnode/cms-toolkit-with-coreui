@@ -74,16 +74,14 @@ class CI_Basic_Role_Controller extends CI_Controller {
 				['passconf', 'Password Confirmation', $require_password ? 'matches[password]' : '']
 			])) {
 				$data = get_post_updates(['name', 'email', 'password']);
-				if (control_file_upload($data, 'avatar', 'avatar',
-					$this->db->get_where('login', ['login_id' => $this->current_id])->row()->avatar,
-					'jpg|jpeg|png|bmp')) {
-						if(control_password_update($data)) {
-							$data['otp'] = NULL;
-						}
-						$this->db->update('login', $data, ['login_id' => $this->current_id]);
-						set_message('Saved successfully');
-						redirect('login/');
+				if (control_file_upload($data, 'avatar', 'avatar', get_values_at('login', $this->current_id), 'jpg|jpeg|png|bmp')) {
+					if(control_password_update($data)) {
+						$data['otp'] = NULL;
 					}
+					$this->db->update('login', $data, ['login_id' => $this->current_id]);
+					set_message('Saved successfully');
+					redirect('login/');
+				}
 			}
 			// Failed updates goes here.
 			$this->profile();

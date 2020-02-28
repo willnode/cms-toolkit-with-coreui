@@ -1,4 +1,3 @@
-
 <?php control_table([
     'toolbar' => get_control_buttons([[
       'href' => 'create',
@@ -23,4 +22,4 @@
         'confirm'=>'Are you sure?'
       ]])
     ],
-  ]) ?>
+  ]);

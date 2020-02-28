@@ -81,7 +81,7 @@ function control_file_upload(&$updates, $name, $folder, $existing_row = NULL, $t
  */
 function control_password_update(&$updates, $field = 'password') {
 	if (!empty($updates[$field])) {
-		$updates['password'] = password_hash($updates['password'], PASSWORD_BCRYPT);
+		$updates[$field] = password_hash($updates[$field], PASSWORD_BCRYPT);
 		return TRUE;
 	}
 	return FALSE;

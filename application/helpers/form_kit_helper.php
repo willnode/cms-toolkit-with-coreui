@@ -218,7 +218,8 @@ function control_buttons($buttons, $style = 'btn-group') {
 }
 
 /**
- * Table template for 1:1 Bootstrap AJAX driven template
+ * Table template for 1:1 Bootstrap AJAX driven template,
+ * Only feasible to be used once per page
  */
 function control_table($data, $columns) {
     $id = isset($data['id']) ? $data['id'] : 'table';
@@ -236,6 +237,12 @@ function control_table($data, $columns) {
         ?><div id="toolbar"><?=$data['toolbar']?></div><?php
         $data['toolbar']='#toolbar';
         empty($data['toolbar-align']) AND $data['toolbar-align'] = 'right';
+    }
+    if (isset($data['detail-formatter'])) {
+        $jsname = 'detailFormatter';
+        $script .= 'function '.$jsname.'(index, data){return `'.$data['detail-formatter']."`}\n";
+        $data['detail-formatter'] = $jsname;
+        $data['detail-view'] = 'true';
     }
     ?>
     <table id=<?=$id?> class="<?=$class?>" <?=control_attrs_data($data)?>><thead><tr>

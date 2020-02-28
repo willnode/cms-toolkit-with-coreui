@@ -133,7 +133,7 @@ class Login_model extends CI_Model {
 	 */
 	public function generate_otp($login_id, $force_regen = FALSE) {
 		if ($force_regen OR empty ($exist = $this->db->get_where(self::TABLE, [self::ID => $login_id])->row()->{self::OTP})) {
-			$otp = random_int(111111, 999999);
+			$otp = (version_compare(PHP_VERSION, '7.0.0') >= 0 ? 'random_int' : 'mt_rand')(111111, 999999);
 			$this->db->update(self::TABLE, [self::OTP => $otp], [self::ID => $login_id]);
 			return $otp;
 		} else {
